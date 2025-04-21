@@ -1,74 +1,97 @@
-import { Image, StyleSheet, Platform } from 'react-native';
-
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import React, { useState, useEffect } from "react";
+import { ScrollView, View, StyleSheet, Text, Alert } from "react-native";
+import { supabase } from "../../utils/supabase"; // Import the Supabase client
+import TankCard from "@/components/TankCard"; // Your TankCard component
 
 export default function HomeScreen() {
+  const [tanks, setTanks] = useState<any[]>([]); // State to hold the tank data
+
+  useEffect(() => {
+    const getTanksWithReadings = async () => {
+      try {
+        // Fetch tanks from the 'tanks' table
+        const { data: tanksData, error: tanksError } = await supabase
+          .from("tanks")
+          .select("id, name, image_url"); // Fetch basic tank info
+
+        if (tanksError) {
+          console.error("Error fetching tanks:", tanksError.message);
+          return;
+        }
+
+        if (tanksData && tanksData.length > 0) {
+          // Fetch the most recent sensor readings for each tank
+          const tanksWithReadings = await Promise.all(
+            tanksData.map(async (tank) => {
+              const { data: readings, error: readingsError } = await supabase
+                .from("sensor_readings")
+                .select("temperature, ph, tds, recorded_at")
+                .eq("tank_id", tank.id)
+                .order("recorded_at", { ascending: false }) // Order by latest recorded_at
+                .limit(1); // Get the most recent reading
+
+              if (readingsError) {
+                console.error(
+                  `Error fetching readings for tank ${tank.id}:`,
+                  readingsError.message
+                );
+              }
+
+              return {
+                ...tank,
+                sensor_readings: readings ? readings[0] : null, // Add the latest readings
+              };
+            })
+          );
+
+          setTanks(tanksWithReadings); // Update state with merged data
+        }
+      } catch (error) {
+        console.error("Unexpected error fetching tanks with readings:", error);
+        Alert.alert(
+          "Error",
+          "An unexpected error occurred while fetching data."
+        );
+      }
+    };
+
+    getTanksWithReadings(); // Fetch data when the component mounts
+  }, []);
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <View style={styles.container}>
+      <Text style={styles.title}>Your Tanks</Text>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        {tanks.map((tank) => (
+          <TankCard
+            key={tank.id} // Unique key for FlatList optimization
+            imageUri={tank.imageUri} // Image URL from Supabase
+            tankName={tank.name} // Tank name from Supabase
+            temperature={tank.sensor_readings?.temperature || "N/A"} // Temperature from Supabase
+            pH={tank.sensor_readings?.ph || "N/A"} // pH from Supabase
+            tds={tank.sensor_readings?.tds || "N/A"} // TDS from Supabase
+            lastTested={tank.sensor_readings?.recorded_at || "N/A"} // Last tested date from Supabase
+          />
+        ))}
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
+    backgroundColor: "#111827", // Dark background
+    padding: 16,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  title: {
+    fontSize: 28,
+    color: "#06b6d4", // Cyan color
+    fontWeight: "bold",
+    marginBottom: 16,
+    textAlign: "center",
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  scrollContainer: {
+    paddingBottom: 32,
   },
 });
