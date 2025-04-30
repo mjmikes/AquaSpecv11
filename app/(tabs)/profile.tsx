@@ -27,7 +27,7 @@ export default function ProfileScreen() {
       </View>
 
       <TouchableOpacity style={styles.button} onPress={handleConnectDevice}>
-        <Text style={styles.buttonText}>Connect Device</Text>
+        <Text style={styles.buttonText}>Connect AquaSpec Device</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>

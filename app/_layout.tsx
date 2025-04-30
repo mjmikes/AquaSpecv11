@@ -50,6 +50,36 @@ function InnerLayout() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
+        <Stack.Screen
+          name="screens/TankDetailScreen"
+          options={{
+            title: "Tank", // optional, can be set dynamically too
+            headerBackTitle: "Tanks", // 👈 Custom back button label
+            headerStyle: {
+              backgroundColor: "#0f172a", // dark background
+            },
+            headerTintColor: "#06b6d4", // text & icon color
+            headerTitleStyle: {
+              fontWeight: "bold",
+              fontSize: 28,
+            },
+          }}
+        />
+        <Stack.Screen
+          name="screens/AddTank"
+          options={{
+            title: "", // optional, can be set dynamically too
+            headerBackTitle: "Tanks", // 👈 Custom back button label
+            headerStyle: {
+              backgroundColor: "#0f172a", // dark background
+            },
+            headerTintColor: "#06b6d4", // text & icon color
+            headerTitleStyle: {
+              fontWeight: "bold",
+              fontSize: 28,
+            },
+          }}
+        />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>

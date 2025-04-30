@@ -55,11 +55,12 @@ export default function LoginScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>
-        {isSignup ? "Create an Account" : "Welcome to AquaSpec"}
+        {isSignup ? "Create an Account" : "AquaSpec"}
       </Text>
 
       <TextInput
         placeholder="Email"
+        placeholderTextColor={"#999"}
         style={styles.input}
         autoCapitalize="none"
         keyboardType="email-address"
@@ -69,6 +70,7 @@ export default function LoginScreen() {
 
       <TextInput
         placeholder="Password"
+        placeholderTextColor={"#999"}
         style={styles.input}
         secureTextEntry
         value={password}
@@ -131,7 +133,8 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   title: {
-    fontSize: 26,
+    fontSize: 40,
+    fontFamily: "Lobster",
     color: "#06b6d4",
     fontWeight: "bold",
     marginBottom: 24,
